@@ -1,0 +1,106 @@
+<div class="chat-page">
+
+  <div class="chat-card">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+      <div class="bot-info">
+         <div class="avatar">
+          <img src="lumi-logo1.png" alt="LUMI" />
+         </div>
+        <div>
+          <div class="bot-name">LUMI AI</div>
+          <div class="status">● Online</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="chat-body" #scrollContainer>
+
+      <div *ngFor="let msg of messages"
+           class="message-row"
+           [ngClass]="msg.role">
+
+        <!-- Assistant Avatar -->
+        <div *ngIf="msg.role === 'assistant'" class="avatar">
+          <img src="lumi-logo1.png" alt="LUMI" />
+        </div>
+
+        <div class="bubble">
+
+        <!-- WORK ITEMS UI -->
+        <ng-container *ngIf="msg.type === 'work-items'; else normalText">
+
+          <div class="work-items">
+            <div *ngFor="let item of msg.data" class="work-item">
+
+              <div class="header">
+                <span class="title">{{ item.title }}</span>
+                <span class="badge">{{ item.type }}</span>
+              </div>
+
+              <div *ngIf="item.priority" class="priority">
+                Priority: {{ item.priority }}
+              </div>
+
+              <div class="desc">
+                {{ item.description }}
+              </div>
+
+            </div>
+
+            <div class="footer-note">
+              Type "proceed" to create work items in Azure DevOps.
+            </div>
+          </div>
+
+        </ng-container>
+
+        <!-- ✅ NORMAL TEXT -->
+        <ng-template #normalText>
+  <div class="summary" [innerHTML]="msg.content"></div>
+</ng-template>
+        
+
+        <div class="time">{{ msg.timestamp | date:'shortTime' }}</div>
+
+      </div>
+        <!-- User -->
+        <div *ngIf="msg.role === 'user'" class="avatar user-avatar">U</div>
+
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div *ngIf="messages.length === 0" class="empty">
+        Ask something about the meeting 👇
+      </div>
+
+      <!-- LOADER -->
+      <div *ngIf="isTyping" class="message-row assistant">
+        <div class="avatar">
+          <img src="lumi-logo1.png" alt="LUMI" />
+        </div>
+        <div class="bubble typing">
+          <app-loader message="Thinking..."></app-loader>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- INPUT -->
+    <div class="chat-input">
+      <input
+        [(ngModel)]="userInput"
+        (keydown.enter)="handleEnter($event)"
+        placeholder="Type your message here..."
+      />
+
+      <button (click)="sendMessage()">
+        ➤
+      </button>
+    </div>
+
+  </div>
+
+</div>

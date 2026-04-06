@@ -1,0 +1,20 @@
+/* Fluent UI / Teams Design Tokens */
+:root {
+  --teams-purple: #6264a7;
+  --teams-bg-light: #f5f5f5;
+  --teams-text-primary: #242424;
+  --teams-text-secondary: #616161;
+  --teams-border: #e1dfdd;
+  --white: #ffffff;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--teams-bg-light);
+  color: var(--teams-text-primary);
+}
+
+* { box-sizing: border-box; }

@@ -1,0 +1,8 @@
+<div *ngIf="loading" class="loader">
+  Loading LUMI...
+</div>
+
+<app-chat-view 
+  *ngIf="!loading" 
+  [meetingId]="meetingId">
+</app-chat-view>

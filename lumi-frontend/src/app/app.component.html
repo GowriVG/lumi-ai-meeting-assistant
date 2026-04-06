@@ -1,0 +1,14 @@
+<div class="app-container" *ngIf="isTeamsInitialized; else loading">
+  
+
+  <main class="content-area">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>
+
+<ng-template #loading>
+  <div class="global-loader">
+    <app-loader message="Initializing LUMI..."></app-loader>
+  </div>
+</ng-template>

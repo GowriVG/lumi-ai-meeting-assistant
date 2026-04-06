@@ -1,0 +1,68 @@
+<div class="enterprise-summary-container">
+  
+  <div class="empty-state-hero" *ngIf="!summary">
+    <h2>Ready to summarize?</h2>
+    <p>LUMI can transform your meeting transcript into actionable insights in seconds.</p>
+    <button class="fluent-primary-btn" (click)="onGenerateSummary()">
+      Generate Insight Summary
+    </button>
+  </div>
+
+  <div class="dashboard-grid" *ngIf="summary">
+    
+    <div class="summary-grid-row">
+      <section class="fluent-card highlight">
+        <div class="card-header">
+          <span class="icon-wrapper points">💡</span>
+          <h3>Key Takeaways</h3>
+        </div>
+        <ul class="clean-list">
+          <li *ngFor="let point of summary.key_points">{{ point }}</li>
+        </ul>
+      </section>
+
+      <section class="fluent-card highlight">
+        <div class="card-header">
+          <span class="icon-wrapper decisions">🎯</span>
+          <h3>Final Decisions</h3>
+        </div>
+        <div class="pill-container">
+          <span class="decision-pill" *ngFor="let decision of summary.decisions">
+            {{ decision }}
+          </span>
+        </div>
+      </section>
+    </div>
+
+    <section class="fluent-card full-width">
+      <div class="card-header">
+        <div class="header-main">
+          <span class="icon-wrapper tasks">📋</span>
+          <h3>Pending Action Items</h3>
+        </div>
+        <span class="item-count">{{ summary.action_items.length }} items detected</span>
+      </div>
+
+      <div class="action-item-table">
+        <div class="task-row" *ngFor="let item of summary.action_items">
+          <div class="task-status">
+            <span class="type-indicator" [attr.data-type]="item.type"></span>
+          </div>
+          <div class="task-info">
+            <div class="task-top">
+              <span class="task-title">{{ item.title }}</span>
+              <span class="task-category">{{ item.type }}</span>
+            </div>
+            <p class="task-desc">{{ item.description }}</p>
+          </div>
+          <div class="task-actions">
+            <button class="ado-sync-btn" title="Push to Azure DevOps">
+              <span class="btn-icon">⚡</span>
+              Sync
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
