@@ -32,30 +32,59 @@
         <!-- WORK ITEMS UI -->
         <ng-container *ngIf="msg.type === 'work-items'; else normalText">
 
-          <div class="work-items">
-            <div *ngFor="let item of msg.data" class="work-item">
+  <div class="work-items">
+<div *ngFor="let item of pendingActionItems" class="work-item">
+  
+  <div class="card-header-actions">
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #605e5c;">
+      <input type="checkbox" [(ngModel)]="item.selected" />
+      <span>Select for DevOps</span>
+    </label>
+    <span class="badge">{{ item.type | uppercase }}</span>
+  </div>
 
-              <div class="header">
-                <span class="title">{{ item.title }}</span>
-                <span class="badge">{{ item.type }}</span>
-              </div>
+  <div class="work-item-row">
+    <input [(ngModel)]="item.title" 
+           placeholder="Title" 
+           class="input-field title-input" />
+    
+    <select [(ngModel)]="item.type" class="input-field" style="flex: 1; font-weight: 600; color: #0078d4;">
+      <option>Epic</option>
+      <option>Feature</option>
+      <option>User Story</option>
+      <option>Task</option>
+      <option>Bug</option>
+    </select>
+  </div>
 
-              <div *ngIf="item.priority" class="priority">
-                Priority: {{ item.priority }}
-              </div>
+  <div class="work-item-row">
+    <textarea [(ngModel)]="item.description" 
+              placeholder="Description" 
+              class="input-field"></textarea>
+  </div>
 
-              <div class="desc">
-                {{ item.description }}
-              </div>
+  <div class="work-item-row" style="margin-bottom: 0;">
+    <input [(ngModel)]="item.owner" 
+           placeholder="Unassigned" 
+           class="input-field" 
+           style="font-size: 12px; flex: 1;" />
+    
+    <input [(ngModel)]="item.priority" 
+           placeholder="Priority" 
+           class="input-field" 
+           style="font-size: 12px; flex: 1; text-align: right;" />
+  </div>
 
-            </div>
+</div>
 
-            <div class="footer-note">
-              Type "proceed" to create work items in Azure DevOps.
-            </div>
-          </div>
+    <!-- ✅ BUTTON -->
+    <button class="create-btn" (click)="createSelectedItems()">
+      Create Selected Items
+    </button>
 
-        </ng-container>
+  </div>
+
+</ng-container>
 
         <!-- ✅ NORMAL TEXT -->
         <ng-template #normalText>

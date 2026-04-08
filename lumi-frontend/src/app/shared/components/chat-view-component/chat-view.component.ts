@@ -28,6 +28,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
   userInput: string = '';
   isTyping: boolean = false;
   pendingActionItems: any[] = [];
+  shouldScroll: boolean = false;
 
   constructor(private lumiService: LumiService) {}
 
@@ -73,9 +74,12 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  ngAfterViewChecked() {
+ ngAfterViewChecked() {
+  if (this.shouldScroll) {
     this.scrollToBottom();
+    this.shouldScroll = false;
   }
+}
 
   sendMessage() {
     if (!this.userInput.trim() || this.isTyping) return;
@@ -94,6 +98,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     this.messages.push(userMsg);
     this.userInput = '';
     this.isTyping = true;
+    this.shouldScroll = true;
 
     const greetings = ['hi', 'hello', 'hey'];
 
@@ -104,7 +109,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
         content: 'Hello. How can I assist you with your meeting?',
         timestamp: new Date(),
       });
-
+      this.shouldScroll = true;
       this.isTyping = false;
       return;
     }
@@ -119,7 +124,10 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
         next: (res) => {
           let items: any = res.summary.action_items || [];
 
-          this.pendingActionItems = items;
+          this.pendingActionItems = items.map((item: any) => ({
+            ...item,
+            selected: false // default unchecked
+          }));
 
           const formatted = this.formatActionItems(items);
 
@@ -127,11 +135,11 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
             id: Date.now().toString(),
             role: 'assistant',
             content: '',
-            type: 'work-items', // 🔥 important
-            data: items, // 🔥 structured data
+            type: 'work-items', 
+            data: items,
             timestamp: new Date(),
           });
-
+          this.shouldScroll = true;
           this.isTyping = false;
         },
         error: (err) => {
@@ -144,39 +152,39 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     }
 
     // CASE 2: PROCEED
-    if (question === 'proceed') {
-      if (!this.pendingActionItems.length) {
-        this.messages.push({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content:
-            '⚠️ No action items to create. Ask me to generate them first.',
-          timestamp: new Date(),
-        });
-        this.isTyping = false;
-        return;
-      }
+    // if (question === 'proceed') {
+    //   if (!this.pendingActionItems.length) {
+    //     this.messages.push({
+    //       id: Date.now().toString(),
+    //       role: 'assistant',
+    //       content:
+    //         '⚠️ No action items to create. Ask me to generate them first.',
+    //       timestamp: new Date(),
+    //     });
+    //     this.isTyping = false;
+    //     return;
+    //   }
 
-      this.lumiService.syncToDevOps(this.meetingId).subscribe({
-        next: () => {
-          this.messages.push({
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: '✅ Work items successfully created in Azure DevOps',
-            timestamp: new Date(),
-          });
+    //   this.lumiService.syncToDevOps(this.meetingId).subscribe({
+    //     next: () => {
+    //       this.messages.push({
+    //         id: Date.now().toString(),
+    //         role: 'assistant',
+    //         content: '✅ Work items successfully created in Azure DevOps',
+    //         timestamp: new Date(),
+    //       });
 
-          this.pendingActionItems = [];
-          this.isTyping = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.isTyping = false;
-        },
-      });
+    //       this.pendingActionItems = [];
+    //       this.isTyping = false;
+    //     },
+    //     error: (err) => {
+    //       console.error(err);
+    //       this.isTyping = false;
+    //     },
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
     console.log('Meeting ID:', this.meetingId);
     // 🔥 CASE: SUMMARY REQUEST
     if (question.includes('summary') || question.includes('summarize')) {
@@ -198,6 +206,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
             content: formatted,
             timestamp: new Date(),
           });
+          this.shouldScroll = true;
 
           this.isTyping = false;
         },
@@ -224,6 +233,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
           content: answer,
           timestamp: new Date(),
         });
+        this.shouldScroll = true;
 
         this.isTyping = false;
       },
@@ -314,6 +324,42 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
 
     return html;
   }
+
+  createSelectedItems() {
+  const selectedItems = this.pendingActionItems.filter(i => i.selected);
+
+  if (!selectedItems.length) {
+    this.messages.push({
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: '⚠️ Please select at least one work item.',
+      timestamp: new Date(),
+    });
+    this.shouldScroll = true;
+    return;
+  }
+
+  this.isTyping = true;
+
+  this.lumiService.syncSelectedItems(this.meetingId, selectedItems)
+    .subscribe({
+      next: () => {
+        this.messages.push({
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: '✅ Selected work items created in Azure DevOps',
+          timestamp: new Date(),
+        });
+
+        this.pendingActionItems = [];
+        this.isTyping = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isTyping = false;
+      }
+    });
+}
 
   private scrollToBottom(): void {
     try {

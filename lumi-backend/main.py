@@ -2,6 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from services.ado_service import ADOService
+from pydantic import BaseModel
+from typing import List, Optional
+from services.retrieval_service import store_embeddings
 
 from exceptions.custom_exceptions import (
     LumiBaseException, 
@@ -25,6 +28,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+class WorkItem(BaseModel):
+    title: str
+    description: str
+    type: str
+    priority: Optional[str] = None
+    story_points: Optional[int] = None
+    owner: Optional[str] = None
 
 # --- GLOBAL ERROR HANDLER ---
 @app.exception_handler(LumiBaseException)
@@ -56,7 +66,12 @@ def root():
 @app.post("/load-meeting/{meeting_id}")
 def load_meeting(meeting_id: str, request: TranscriptRequest):
     store_meeting(meeting_id, request.transcript)
+
+    store_embeddings(meeting_id, request.transcript)
+
     return {"message": "Meeting loaded successfully"}
+
+
 
 # --- SUMMARIZE (FOR ADO PREVIEW) ---
 @app.post("/summarize/{meeting_id}")
@@ -88,7 +103,7 @@ def ask(meeting_id: str, request: QuestionRequest):
         store_meeting(meeting_id, "No transcript available yet.")
         meeting = get_meeting(meeting_id)
 
-    answer = ask_question(meeting["transcript"], request.question)
+    answer = ask_question(meeting_id, meeting["transcript"], request.question)
 
     add_qa(meeting_id, request.question, answer)
 
@@ -124,6 +139,19 @@ async def sync_meeting_items(meeting_id: str):
     action_items = summary.get("action_items", [])
 
     results = ado_service.sync_all_items(action_items)
+
+    return {
+        "status": "success",
+        "synced_items": results
+    }
+
+@app.post("/sync-selected/{meeting_id}")
+async def sync_selected_items(meeting_id: str, items: List[WorkItem]):
+
+    if not items:
+        raise Exception("No items provided")
+
+    results = ado_service.sync_all_items([item.dict() for item in items])
 
     return {
         "status": "success",

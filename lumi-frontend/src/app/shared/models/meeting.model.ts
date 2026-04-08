@@ -6,6 +6,12 @@ export interface ActionItem {
   title: string;
   description: string;
   type: 'User Story' | 'Task' | 'Bug';
+
+  // 🔥 NEW FIELDS
+  selected?: boolean;
+  priority?: string;
+  story_points?: number;
+  owner?: string;
 }
 
 /**

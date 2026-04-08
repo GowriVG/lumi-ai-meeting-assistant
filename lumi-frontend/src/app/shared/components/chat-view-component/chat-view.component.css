@@ -50,24 +50,17 @@
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
-/* MESSAGE */
-.message-row {
-  display: flex;
-  margin-bottom: 12px;
-  align-items: flex-end;
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px; /* Subtle rounding for the logo */
 }
 
-.message-row.user {
-  justify-content: flex-end;
-}
-
-.message-row.assistant {
-  justify-content: flex-start;
-}
-
-/* AVATAR */
 .avatar {
   width: 36px;
   height: 36px;
@@ -79,38 +72,37 @@
   justify-content: center;
 }
 
-.avatar img {
-  width: 70%;
-  height: 95%;
-  object-fit: contain;  /* 🔥 KEY FIX */
-}
-
 .user-avatar {
   background: #5b5fc7;
   color: white;
 }
 
-/* BUBBLE */
-.bubble {
-  max-width: 70%;
-  padding: 12px;
-  border-radius: 14px;
-  background: #f1f3f6;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* USER */
-.user .bubble {
-  background: #5b5fc7;
-  color: white;
-  border-radius: 14px 14px 4px 14px;
-}
-
-/* ASSISTANT */
 .assistant .bubble {
   border-radius: 14px 14px 14px 4px;
 }
+
+/* 2. Professional Bubble Adjustments */
+.bubble {
+  max-width: 85%; /* 🔥 Wider bubbles for better card display */
+  padding: 14px 16px;
+  border-radius: 8px; /* Slightly more square for enterprise feel */
+  background: #ffffff; /* White background for bot messages */
+  border: 1px solid #e1dfdd;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  position: relative;
+  overflow-wrap: break-word;
+}
+
+/* 3. User Bubble - Distinct but Clean */
+.user .bubble {
+  background: #f3f2f1; /* Light grey for user (Teams style) */
+  color: #323130;
+  border-color: #edebe9;
+  border-radius: 8px;
+}
+
 
 /* TIME */
 .time {
@@ -156,11 +148,50 @@
 }
 
 .work-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-left: 4px solid #0078d4;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box; /* 🔥 Prevents overflow */
+}
+
+
+.work-item-row {
+  display: flex;
+  flex-direction: column; 
+  gap: 12px;
+  width: 100%;
   margin-bottom: 10px;
-  background: white;
+
+}
+/* Horizontal sub-row for smaller inputs */
+.sub-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.work-item .priority {
+  font-size: 11px;
+  color: #d83b01; /* Alert Orange for Priority */
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.work-item .desc {
+  font-size: 13px;
+  color: #605e5c;
+  line-height: 1.4;
+}
+/* Container fix to prevent horizontal scroll */
+.work-items {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header {
@@ -170,13 +201,6 @@
   margin-bottom: 6px;
 }
 
-.badge {
-  background: #eef2ff;
-  color: #4338ca;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 6px;
-}
 
 .priority {
   font-size: 12px;
@@ -189,36 +213,7 @@
   color: #374151;
 }
 
-/* Container for Work Items */
-.work-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
-}
 
-/* Individual Work Item Card */
-.work-item {
-  background: #ffffff;
-  border: 1px solid #e1dfdd;
-  border-left: 4px solid #0078d4; /* DevOps Blue */
-  border-radius: 4px;
-  padding: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.work-item .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.work-item .title {
-  font-weight: 600;
-  color: #323130;
-  font-size: 14px;
-}
 
 /* Badges for Epic, Feature, etc. */
 .badge {
@@ -229,19 +224,6 @@
   border-radius: 12px;
   background: #f3f2f1;
   color: #605e5c;
-}
-
-.work-item .priority {
-  font-size: 11px;
-  color: #d83b01; /* Alert Orange for Priority */
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.work-item .desc {
-  font-size: 13px;
-  color: #605e5c;
-  line-height: 1.4;
 }
 
 /* Summary List Styling */
@@ -263,7 +245,6 @@
   color: #323130;
 }
 
-/* 1. Fix Message Row Alignment */
 .message-row {
   display: flex;
   margin-bottom: 20px; /* Increased spacing between messages */
@@ -271,41 +252,16 @@
   gap: 12px; /* Consistent gap between avatar and bubble */
 }
 
-/* 2. Professional Bubble Adjustments */
-.bubble {
-  max-width: 85%; /* 🔥 Wider bubbles for better card display */
-  padding: 14px 16px;
-  border-radius: 8px; /* Slightly more square for enterprise feel */
-  background: #ffffff; /* White background for bot messages */
-  border: 1px solid #e1dfdd;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  position: relative;
+.message-row.user {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
-/* 3. User Bubble - Distinct but Clean */
-.user .bubble {
-  background: #f3f2f1; /* Light grey for user (Teams style) */
-  color: #323130;
-  border-color: #edebe9;
-  border-radius: 8px;
+.message-row.assistant {
+  justify-content: flex-start;
 }
 
-/* 4. Fix the Bot Avatar/Logo Visibility */
-.avatar {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0; /* Prevent avatar from squeezing */
-  background: transparent; 
-}
 
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 4px; /* Subtle rounding for the logo */
-}
-
-/* 5. User Initials Circle */
 .user-avatar {
   background: #5b5fc7;
   color: white;
@@ -339,3 +295,72 @@
   color: #8a8886;
   text-align: left; /* Professional standard */
 }
+.card-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+}
+/* Premium Inputs: No borders until hover/focus */
+.input-field {
+  width: 100%;
+  border: 1px solid transparent;
+  background: #fcfcfc;
+  padding: 8px;
+  font-size: 13px;
+  color: #323130;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-field.title-input {
+  font-weight: 700;
+  font-size: 15px;
+  background: transparent;
+  padding-left: 0;
+}
+textarea.input-field {
+  min-height: 80px; /* Force it to be taller */
+  line-height: 1.5;
+  font-family: inherit;
+  resize: none; /* Keeps it professional looking */
+  overflow: hidden; /* We'll handle height in TS or just set a safe minimum */
+}
+
+/* Hover/Focus states for professional look */
+.input-field:hover {
+  background: #f8f9fa;
+  border-bottom: 1px solid #d2d0ce;
+}
+
+.input-field:focus {
+  background: #ffffff;
+  border-bottom: 2px solid #0078d4;
+}
+
+
+.create-btn {
+  margin-top: 15px;
+  padding: 10px 24px;
+  background-color: #107c10; /* Office/DevOps Green */
+  color: white;
+  border: none;
+  border-radius: 2px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: center; /* Center the button in the chat */
+}
+
+.create-btn:hover {
+  background-color: #0b5a0b;
+}
+
+.create-btn:active {
+  background-color: #094a09;
+}
+

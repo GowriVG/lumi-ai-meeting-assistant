@@ -3,6 +3,7 @@ import json
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 from exceptions.custom_exceptions import OpenAIServiceError, PromptValidationError
+from services.retrieval_service import retrieve_relevant_chunks
 
 load_dotenv()
 
@@ -14,6 +15,8 @@ client = AzureOpenAI(
 
 deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
+def normalize_question(q: str):
+    return q.lower().strip()
 
 def summarize_meeting(transcript: str):
 
@@ -108,49 +111,53 @@ Return ONLY valid JSON.
 
     except Exception as e:
         raise OpenAIServiceError(f"Azure OpenAI Error: {str(e)}")
+def ask_question(meeting_id: str, transcript: str, question: str):
 
-def ask_question(transcript: str, question: str):
+    question = normalize_question(question)
+
+    # 🔥 GET RELEVANT CONTEXT
+    chunks = retrieve_relevant_chunks(meeting_id, question)
+
+    context = "\n\n".join(chunks) if chunks else transcript[:1000]
 
     prompt = f"""
-You are an AI meeting assistant.
-Return ONLY valid JSON. Do NOT wrap the JSON inside strings or an 'answer' field. Return the JSON object directly.
+You are an intelligent AI meeting assistant.
 
-Return the answer strictly in JSON format like:
+Answer the question based on the CONTEXT provided.
+
+IMPORTANT:
+- Understand intent, not exact wording
+- Handle spelling mistakes and paraphrasing
+- Be flexible in understanding
+
+STRICT RULE:
+- If answer is NOT present in context, say:
+  "This information was not discussed in the meeting."
+
+Return JSON:
 {{ "answer": "your answer here" }}
 
-Rules:
-- Answer ONLY from the transcript
-- If not found, return:
-  {{ "answer": "This information was not discussed in the meeting." }}
+CONTEXT:
+{context}
 
-Transcript:
-{transcript}
-
-Question:
+QUESTION:
 {question}
-
-Return ONLY valid JSON.
 """
 
     try:
-
         response = client.chat.completions.create(
             model=deployment,
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful meeting assistant. Always respond in JSON format."
-                },
+                {"role": "system", "content": "You are a smart enterprise assistant."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
             response_format={"type": "json_object"},
-            timeout = 30
+            timeout=30
         )
 
         content = response.choices[0].message.content.strip()
 
-        # ✅ SAFE PARSE
         if content.startswith("```"):
             content = content.split("```")[1]
             if content.startswith("json"):
@@ -159,9 +166,7 @@ Return ONLY valid JSON.
         return json.loads(content)
 
     except json.JSONDecodeError:
-        raise PromptValidationError(
-            f"Invalid JSON returned: {content[:100]}"
-        )
+        raise PromptValidationError(f"Invalid JSON returned: {content[:100]}")
 
     except Exception as e:
         raise OpenAIServiceError(f"Q&A Error: {str(e)}")

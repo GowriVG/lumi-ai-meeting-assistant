@@ -66,4 +66,11 @@ export class LumiService {
     {}
   );
 }
+syncSelectedItems(meetingId: string, items: any[]) {
+  return this.http.post(
+    `${this.API_URL}/sync-selected/${meetingId}`,
+    items
+  );
+}
+
 }
