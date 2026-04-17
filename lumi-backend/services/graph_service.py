@@ -1,30 +1,41 @@
 import requests
 from auth.graph_auth import get_graph_token
+from logger import logger
 
-def fetch_transcript(user_id, meeting_id):
+from logger import logger
 
-    token = get_graph_token()
+def fetch_latest_transcript():
+    try:
+        logger.info("Fetching transcript from Microsoft Graph")
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+        token = get_graph_token()
 
-    list_url = f"https://graph.microsoft.com/v1.0/users/{user_id}/onlineMeetings/{meeting_id}/transcripts"
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
 
-    response = requests.get(list_url, headers=headers)
+        meetings_url = "https://graph.microsoft.com/v1.0/me/onlineMeetings"
+        meetings = requests.get(meetings_url, headers=headers).json()
 
-    if response.status_code != 200:
-        raise Exception(f"Graph Error: {response.text}")
+        if not meetings.get("value"):
+            raise Exception("No meetings found")
 
-    data = response.json()
+        meeting_id = meetings["value"][0]["id"]
 
-    if "value" not in data or not data["value"]:
-        raise Exception("No transcripts found")
+        transcript_url = f"https://graph.microsoft.com/v1.0/me/onlineMeetings/{meeting_id}/transcripts"
+        transcripts = requests.get(transcript_url, headers=headers).json()
 
-    transcript_id = data["value"][0]["id"]
+        if not transcripts.get("value"):
+            raise Exception("No transcripts found")
 
-    content_url = f"https://graph.microsoft.com/v1.0/users/{user_id}/onlineMeetings/{meeting_id}/transcripts/{transcript_id}/content"
+        transcript_id = transcripts["value"][0]["id"]
 
-    content = requests.get(content_url, headers=headers)
+        content_url = f"https://graph.microsoft.com/v1.0/me/onlineMeetings/{meeting_id}/transcripts/{transcript_id}/content"
 
-    return content.text
+        content = requests.get(content_url, headers=headers)
+
+        return content.text
+
+    except Exception:
+        logger.error("Graph API failed", exc_info=True)
+        raise

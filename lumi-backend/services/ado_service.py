@@ -1,8 +1,11 @@
 import os
+from logger import logger
 import requests
 from dotenv import load_dotenv
 import json
 import urllib3
+import time
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -17,7 +20,9 @@ class ADOService:
         self.user_map = None
         if self.user_map is None:
             self.user_map = self.get_ado_users()
-            
+
+ 
+
     def get_user_display_name(self, display_name):
 
         if self.user_map is None:
@@ -37,6 +42,7 @@ class ADOService:
         description = item.get("description", "No Description")
         item_type = item.get("type", "Task")
         encoded_type = item_type.replace(" ", "%20")
+        logger.info(f"Creating ADO work item: {item.get('title')}")
 
         url = f"https://dev.azure.com/{self.org}/{self.project}/_apis/wit/workitems/${encoded_type}?api-version=7.0"
 
@@ -150,19 +156,30 @@ class ADOService:
                 }
             })
 
-        response = requests.post(
-            url,
-            headers={"Content-Type": "application/json-patch+json"},
-            auth=("", self.pat),
-            json=body,
-            verify=False
-        )
+        response = None
+
+        for _ in range(3):
+            try:
+                response = requests.post(
+                    url,
+                    headers={"Content-Type": "application/json-patch+json"},
+                    auth=("", self.pat),
+                    json=body,
+                    verify=False,
+                    timeout=10
+                )
+
+                if response.status_code in [200, 201]:
+                    break
+
+            except Exception:
+                time.sleep(1)
 
         if response.status_code not in [200, 201]:
-            print("ADO STATUS:", response.status_code)
+            logger.error(f"ADO failed: {response.status_code} - {response.text}")
             print("ADO RESPONSE:", response.text[:300])
             raise Exception("Azure DevOps work item creation failed")
-
+        logger.info("ADO work item created successfully")
         return response.json()
     
     def get_ado_users(self):
@@ -215,7 +232,6 @@ class ADOService:
     def sync_all_items(self, action_items):
 
         results = []
-
         epics = []
         features = []
         stories = []

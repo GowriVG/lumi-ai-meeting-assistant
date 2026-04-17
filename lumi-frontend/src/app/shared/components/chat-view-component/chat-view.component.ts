@@ -33,35 +33,57 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
   constructor(private lumiService: LumiService) {}
 
   ngOnInit(): void {
-    console.log('Using meeting:', this.meetingId);
-    // 🔥 Ensure meeting exists first
-    this.lumiService.getMeetingState(this.meetingId).subscribe({
-      next: (data) => {
-        this.messages = (data.qa_history || []).filter(
-          (msg: any) => msg.content && msg.content.trim() !== '',
-        );
-        if (this.messages.length === 0) {
-          this.messages.push({
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: 'Ask me anything about your meeting.',
-            timestamp: new Date(),
-          });
-        }
-      },
-      error: (err) => {
-        console.error('Meeting not found:', err);
+  console.log('Using meeting:', this.meetingId);
 
-        this.messages.push({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: '⚠️ Meeting not found. Please load a transcript first.',
-          timestamp: new Date(),
-        });
-      },
-    });
+  if (!this.meetingId) {
+    this.showError("Meeting context not available.");
+    return;
   }
 
+  this.lumiService.getMeetingState(this.meetingId).subscribe({
+    next: (data) => {
+      console.log("Meeting data:", data);
+
+      // ❌ No transcript
+      if (!data.transcript || data.transcript === "No transcript available yet.") {
+        this.showError("⚠️ No transcript available for this meeting.");
+        return;
+      }
+
+      // ✅ Valid meeting
+      this.initializeMessages(data);
+    },
+
+    error: (err) => {
+      console.error("Meeting not found:", err);
+      this.showError("⚠️ Meeting not found. Transcript not loaded.");
+    }
+  });
+}
+showError(message: string) {
+  this.messages = [
+    {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: message,
+      timestamp: new Date(),
+    }
+  ];
+}
+initializeMessages(data: any) {
+  this.messages = (data.qa_history || []).filter(
+    (msg: any) => msg.content && msg.content.trim() !== ''
+  );
+
+  if (this.messages.length === 0) {
+    this.messages.push({
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: 'Ask me anything about your meeting.',
+      timestamp: new Date(),
+    });
+  }
+}
   loadMessages() {
     this.lumiService.getMeetingState(this.meetingId).subscribe({
       next: (data) => {
@@ -87,7 +109,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     const originalQuestion = this.userInput;
     const question = originalQuestion.trim().toLowerCase();
 
-    // ✅ Push user message
+    // Push user message
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -114,7 +136,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
       return;
     }
 
-    // 🔥 CASE 1: CREATE REQUEST
+    //CASE 1: CREATE REQUEST
     if (
       question.includes('create work item') ||
       question.includes('create user story') ||
@@ -151,42 +173,7 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
       return;
     }
 
-    // CASE 2: PROCEED
-    // if (question === 'proceed') {
-    //   if (!this.pendingActionItems.length) {
-    //     this.messages.push({
-    //       id: Date.now().toString(),
-    //       role: 'assistant',
-    //       content:
-    //         '⚠️ No action items to create. Ask me to generate them first.',
-    //       timestamp: new Date(),
-    //     });
-    //     this.isTyping = false;
-    //     return;
-    //   }
-
-    //   this.lumiService.syncToDevOps(this.meetingId).subscribe({
-    //     next: () => {
-    //       this.messages.push({
-    //         id: Date.now().toString(),
-    //         role: 'assistant',
-    //         content: '✅ Work items successfully created in Azure DevOps',
-    //         timestamp: new Date(),
-    //       });
-
-    //       this.pendingActionItems = [];
-    //       this.isTyping = false;
-    //     },
-    //     error: (err) => {
-    //       console.error(err);
-    //       this.isTyping = false;
-    //     },
-    //   });
-
-    //   return;
-    // }
     console.log('Meeting ID:', this.meetingId);
-    // 🔥 CASE: SUMMARY REQUEST
     if (question.includes('summary') || question.includes('summarize')) {
       this.lumiService.getSummary(this.meetingId).subscribe({
         next: (res) => {

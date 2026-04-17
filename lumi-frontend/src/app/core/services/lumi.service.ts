@@ -8,8 +8,8 @@ import { MeetingDetails, MeetingSummary } from '../../shared/models/meeting.mode
 })
 export class LumiService {
   // Use the local URL where your FastAPI server is running
-  private readonly API_URL = 'http://127.0.0.1:8000';
-
+  //private readonly API_URL = 'http://127.0.0.1:8000';
+  private readonly API_URL = 'https://lumiapi01.azurewebsites.net';
   constructor(private http: HttpClient) {}
 
   loadMeeting(meetingId: string, transcript: string) {
@@ -21,10 +21,6 @@ export class LumiService {
   );
 }
 
-
-  /**
-   * Fetches the full current state of the meeting, including transcript and history.
-   */
   getMeetingState(meetingId: string): Observable<MeetingDetails> {
     return this.http.get<MeetingDetails>(`${this.API_URL}/meeting/${meetingId}`).pipe(
       catchError(this.handleError)

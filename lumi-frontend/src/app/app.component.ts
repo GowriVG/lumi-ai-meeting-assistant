@@ -18,12 +18,22 @@ import { LoaderComponent } from './shared/components/loader/loader.component';
 export class AppComponent implements OnInit {
   title = 'LUMI-Frontend';
   isTeamsInitialized = false;
+  meetingId: string = '';
 
   async ngOnInit() {
-  // ✅ Detect if running inside Teams
   if (window.self !== window.top) {
     try {
       await microsoftTeams.app.initialize();
+
+      const context = await microsoftTeams.app.getContext();
+
+      console.log("Teams Context:", context);
+
+      // Get meeting ID
+      this.meetingId = context.meeting?.id || context.channel?.id || "default-meeting";
+
+      console.log("Meeting ID from Teams:", this.meetingId);
+
       this.isTeamsInitialized = true;
 
       microsoftTeams.app.notifySuccess();
@@ -37,8 +47,10 @@ export class AppComponent implements OnInit {
       this.isTeamsInitialized = true;
     }
   } else {
-    // ✅ Local dev mode
     console.log('Running outside Teams (local mode)');
+    
+    // fallback for local testing
+    this.meetingId = "local-test-meeting";
     this.isTeamsInitialized = true;
   }
 }

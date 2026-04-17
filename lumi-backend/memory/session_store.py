@@ -10,7 +10,7 @@ def store_meeting(meeting_id, transcript):
         "created_at": datetime.utcnow(),
         "last_updated": datetime.utcnow()
     }
-# gft
+
 def get_meeting(meeting_id):
     return meeting_store.get(meeting_id)
 

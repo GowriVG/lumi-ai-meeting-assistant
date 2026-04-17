@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "bf1c915a-5b39-4723-952a-3a52dd434c49",
+  "packageName": "com.lumi.app",
+  "developer": {
+    "name": "LUMI",
+    "websiteUrl": "https://a1strlumi01t.z19.web.core.windows.net",
+    "privacyUrl": "https://a1strlumi01t.z19.web.core.windows.net",
+    "termsOfUseUrl": "https://a1strlumi01t.z19.web.core.windows.net"
+  },
+  "name": {
+    "short": "LUMI AI",
+    "full": "LUMI AI Meeting Assistant"
+  },
+  "description": {
+    "short": "AI assistant for meetings",
+    "full": "LUMI helps summarize meetings and create Azure DevOps work items"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#6264A7",
+  "staticTabs": [
+    {
+      "entityId": "lumi",
+      "name": "LUMI",
+      "contentUrl": "https://a1strlumi01t.z19.web.core.windows.net",
+      "websiteUrl": "https://a1strlumi01t.z19.web.core.windows.net",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "a1strlumi01t.z19.web.core.windows.net",
+    "lumiapi01.azurewebsites.net"
+  ]
+}

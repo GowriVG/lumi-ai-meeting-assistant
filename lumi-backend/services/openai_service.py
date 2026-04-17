@@ -3,6 +3,7 @@ import json
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 from exceptions.custom_exceptions import OpenAIServiceError, PromptValidationError
+from logger import logger
 from services.retrieval_service import retrieve_relevant_chunks
 
 load_dotenv()
@@ -15,10 +16,13 @@ client = AzureOpenAI(
 
 deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
+
+
 def normalize_question(q: str):
     return q.lower().strip()
 
 def summarize_meeting(transcript: str):
+    logger.info("Calling OpenAI for summarization")
 
     prompt = f"""
 You are an AI meeting assistant.
@@ -110,12 +114,14 @@ Return ONLY valid JSON.
         )
 
     except Exception as e:
+        logger.error("OpenAI call failed", exc_info=True)
         raise OpenAIServiceError(f"Azure OpenAI Error: {str(e)}")
+    
 def ask_question(meeting_id: str, transcript: str, question: str):
+    logger.info("Calling OpenAI for question answering")
 
     question = normalize_question(question)
 
-    # 🔥 GET RELEVANT CONTEXT
     chunks = retrieve_relevant_chunks(meeting_id, question)
 
     context = "\n\n".join(chunks) if chunks else transcript[:1000]
