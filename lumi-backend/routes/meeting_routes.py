@@ -29,11 +29,6 @@ def summarize(meeting_id: str):
         "data": result["summary"]
     }
 
-
-# @router.post("/ask/{meeting_id}")
-# def ask(meeting_id: str, request: QuestionRequest):
-#     return ask_service(meeting_id, request.question)
-
 @router.post("/ask/{meeting_id}")
 def ask(meeting_id: str, request: QuestionRequest):
     result = ask_service(meeting_id, request.question)
@@ -42,10 +37,6 @@ def ask(meeting_id: str, request: QuestionRequest):
         "status": "success",
         "data": result["answer"]
     }
-
-# @router.get("/meeting/{meeting_id}")
-# def get_meeting(meeting_id: str):
-#     return get_meeting_service(meeting_id)
 
 @router.get("/meeting/{meeting_id}")
 def get_meeting(meeting_id: str):

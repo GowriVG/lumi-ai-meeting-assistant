@@ -16,8 +16,6 @@ client = AzureOpenAI(
 
 deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
-
-
 def normalize_question(q: str):
     return q.lower().strip()
 

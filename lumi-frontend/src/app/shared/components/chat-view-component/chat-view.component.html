@@ -40,7 +40,7 @@
       <input type="checkbox" [(ngModel)]="item.selected" />
       <span>Select for DevOps</span>
     </label>
-    <span class="badge">{{ item.type | uppercase }}</span>
+    <span class="badge" [ngClass]="item.type.toLowerCase().replace(' ', '-')">{{ item.type }}</span>
   </div>
 
   <div class="work-item-row">
@@ -78,7 +78,10 @@
 </div>
 
     <!-- ✅ BUTTON -->
-    <button class="create-btn" (click)="createSelectedItems()">
+   <button
+  class="create-btn"
+  (click)="createSelectedItems()"
+  [disabled]="!canCreateSelectedItems()">
       Create Selected Items
     </button>
 
@@ -100,19 +103,18 @@
 
       </div>
 
-      <!-- EMPTY STATE -->
-      <div *ngIf="messages.length === 0" class="empty">
-        Ask something about the meeting 👇
-      </div>
-
       <!-- LOADER -->
       <div *ngIf="isTyping" class="message-row assistant">
         <div class="avatar">
           <img src="lumi-logo1.png" alt="LUMI" />
         </div>
-        <div class="bubble typing">
-          <app-loader message="Thinking..."></app-loader>
+        <div class="bubble typing-bubble">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
+</div>
       </div>
 
     </div>

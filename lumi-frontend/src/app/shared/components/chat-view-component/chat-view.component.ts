@@ -10,12 +10,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LumiService } from '../../../core/services/lumi.service';
 import { ChatMessage } from '../../models/meeting.model';
-import { LoaderComponent } from '../loader/loader.component';
 
 @Component({
   selector: 'app-chat-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './chat-view.component.html',
   styleUrls: ['./chat-view.component.css'],
 })
@@ -33,57 +32,66 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
   constructor(private lumiService: LumiService) {}
 
   ngOnInit(): void {
-  console.log('Using meeting:', this.meetingId);
+    console.log('Using meeting:', this.meetingId);
 
-  if (!this.meetingId) {
-    this.showError("Meeting context not available.");
-    return;
-  }
-
-  this.lumiService.getMeetingState(this.meetingId).subscribe({
-    next: (data) => {
-      console.log("Meeting data:", data);
-
-      // ❌ No transcript
-      if (!data.transcript || data.transcript === "No transcript available yet.") {
-        this.showError("⚠️ No transcript available for this meeting.");
-        return;
-      }
-
-      // ✅ Valid meeting
-      this.initializeMessages(data);
-    },
-
-    error: (err) => {
-      console.error("Meeting not found:", err);
-      this.showError("⚠️ Meeting not found. Transcript not loaded.");
+    if (!this.meetingId) {
+      this.showError('Meeting context not available.');
+      return;
     }
-  });
-}
-showError(message: string) {
-  this.messages = [
-    {
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: message,
-      timestamp: new Date(),
-    }
-  ];
-}
-initializeMessages(data: any) {
-  this.messages = (data.qa_history || []).filter(
-    (msg: any) => msg.content && msg.content.trim() !== ''
-  );
 
-  if (this.messages.length === 0) {
-    this.messages.push({
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: 'Ask me anything about your meeting.',
-      timestamp: new Date(),
+    this.lumiService.getMeetingState(this.meetingId).subscribe({
+      next: (data) => {
+        console.log('Meeting data:', data);
+
+        // ❌ No transcript
+        if (
+          !data.transcript ||
+          data.transcript === 'No transcript available yet.'
+        ) {
+          this.showError('⚠️ No transcript available for this meeting.');
+          return;
+        }
+
+        // ✅ Valid meeting
+        this.initializeMessages(data);
+      },
+
+      error: (err) => {
+        console.error('Meeting not found:', err);
+        this.showError('⚠️ Meeting not found. Transcript not loaded.');
+      },
     });
   }
-}
+  canCreateSelectedItems(): boolean {
+    return this.pendingActionItems.some(
+      (item: any) => item.selected && !item.created,
+    );
+  }
+
+  showError(message: string) {
+    this.messages = [
+      {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: message,
+        timestamp: new Date(),
+      },
+    ];
+  }
+  initializeMessages(data: any) {
+    this.messages = (data.qa_history || []).filter(
+      (msg: any) => msg.content && msg.content.trim() !== '',
+    );
+
+    if (this.messages.length === 0) {
+      this.messages.push({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Ask me anything about your meeting.',
+        timestamp: new Date(),
+      });
+    }
+  }
   loadMessages() {
     this.lumiService.getMeetingState(this.meetingId).subscribe({
       next: (data) => {
@@ -96,12 +104,12 @@ initializeMessages(data: any) {
     });
   }
 
- ngAfterViewChecked() {
-  if (this.shouldScroll) {
-    this.scrollToBottom();
-    this.shouldScroll = false;
+  ngAfterViewChecked() {
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false;
+    }
   }
-}
 
   sendMessage() {
     if (!this.userInput.trim() || this.isTyping) return;
@@ -148,7 +156,7 @@ initializeMessages(data: any) {
 
           this.pendingActionItems = items.map((item: any) => ({
             ...item,
-            selected: false // default unchecked
+            selected: false, // default unchecked
           }));
 
           const formatted = this.formatActionItems(items);
@@ -157,7 +165,7 @@ initializeMessages(data: any) {
             id: Date.now().toString(),
             role: 'assistant',
             content: '',
-            type: 'work-items', 
+            type: 'work-items',
             data: items,
             timestamp: new Date(),
           });
@@ -240,7 +248,7 @@ initializeMessages(data: any) {
     }
   }
 
-  // ✅ Format ADO preview
+  // Format ADO preview
   formatActionItems(items: any[]): string {
     if (!items.length) {
       return `<div class="empty-state">No work items identified.</div>`;
@@ -313,40 +321,45 @@ initializeMessages(data: any) {
   }
 
   createSelectedItems() {
-  const selectedItems = this.pendingActionItems.filter(i => i.selected);
+    const selectedItems = this.pendingActionItems.filter((i) => i.selected);
 
-  if (!selectedItems.length) {
-    this.messages.push({
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: '⚠️ Please select at least one work item.',
-      timestamp: new Date(),
-    });
-    this.shouldScroll = true;
-    return;
+    if (!selectedItems.length) {
+      this.messages.push({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '⚠️ Please select at least one work item.',
+        timestamp: new Date(),
+      });
+      this.shouldScroll = true;
+      return;
+    }
+
+    this.isTyping = true;
+
+    this.lumiService
+      .syncSelectedItems(this.meetingId, selectedItems)
+      .subscribe({
+        next: () => {
+          this.messages.push({
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: 'Selected work items created in Azure DevOps',
+            timestamp: new Date(),
+          });
+
+          this.pendingActionItems.forEach((item) => {
+            if (item.selected) {
+              item.created = true;
+            }
+          });
+          this.isTyping = false;
+        },
+        error: (err) => {
+          console.error(err);
+          this.isTyping = false;
+        },
+      });
   }
-
-  this.isTyping = true;
-
-  this.lumiService.syncSelectedItems(this.meetingId, selectedItems)
-    .subscribe({
-      next: () => {
-        this.messages.push({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: '✅ Selected work items created in Azure DevOps',
-          timestamp: new Date(),
-        });
-
-        this.pendingActionItems = [];
-        this.isTyping = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.isTyping = false;
-      }
-    });
-}
 
   private scrollToBottom(): void {
     try {

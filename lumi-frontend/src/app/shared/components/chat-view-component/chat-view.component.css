@@ -9,8 +9,9 @@
 
 /* CARD */
 .chat-card {
-  width: 380px;
-  height: 85vh;
+  width: 470px;
+  max-width: 95vw;
+  height: 88vh;
   background: white;
   border-radius: 20px;
   display: flex;
@@ -21,7 +22,7 @@
 
 /* HEADER */
 .chat-header {
-  background: linear-gradient(135deg, #6a11cb, #5b5fc7);
+  background: linear-gradient(135deg, #9360ca, #7779b6);
   padding: 16px;
   color: white;
 }
@@ -30,19 +31,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.bot-avatar {
-  font-size: 24px;
-}
-
-.bot-name {
-  font-weight: 600;
-}
-
-.status {
-  font-size: 12px;
-  opacity: 0.8;
 }
 
 /* BODY */
@@ -58,7 +46,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 4px; /* Subtle rounding for the logo */
+  border-radius: 4px; 
 }
 
 .avatar {
@@ -66,27 +54,22 @@
   height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  background: white; /* better for logo */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.user-avatar {
-  background: #5b5fc7;
-  color: white;
-}
 
 .assistant .bubble {
   border-radius: 14px 14px 14px 4px;
 }
 
-/* 2. Professional Bubble Adjustments */
+
 .bubble {
-  max-width: 85%; /* 🔥 Wider bubbles for better card display */
+  max-width: 85%; 
   padding: 14px 16px;
-  border-radius: 8px; /* Slightly more square for enterprise feel */
-  background: #ffffff; /* White background for bot messages */
+  border-radius: 8px; 
+  background: #ffffff; 
   border: 1px solid #e1dfdd;
   font-size: 14px;
   line-height: 1.4;
@@ -103,13 +86,13 @@
   border-radius: 8px;
 }
 
-
 /* TIME */
 .time {
   font-size: 10px;
-  margin-top: 4px;
-  opacity: 0.6;
-  text-align: right;
+  margin-top: 6px;
+  color: #8a8886;
+  opacity: 0.8;
+  text-align: left;
 }
 
 /* INPUT */
@@ -117,27 +100,32 @@
   padding: 12px;
   display: flex;
   background: white;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #edebe9;
+  gap: 10px;
 }
 
 .chat-input input {
   flex: 1;
-  border: none;
-  background: #f1f3f6;
-  border-radius: 20px;
-  padding: 10px;
+  border: 1px solid #d1d1d1;
+  background: #faf9f8;
+  border-radius: 24px;
+  padding: 12px 16px;
   outline: none;
+  font-size: 14px;
 }
-
 .chat-input button {
-  margin-left: 8px;
   background: #5b5fc7;
   color: white;
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.chat-input button:hover {
+  background: #4b4fc0;
 }
 
 /* EMPTY */
@@ -146,28 +134,43 @@
   margin-top: 100px;
   color: #777;
 }
+.work-items {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
 
 .work-item {
   background: #ffffff;
   border: 1px solid #e1dfdd;
-  border-left: 4px solid #0078d4;
-  border-radius: 6px;
+  border-radius: 4px;
+  border-left: 5px solid rgb(101 39 151);
+  transition: all 0.2s ease;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 3px 10px rgba(0,0,0,.05);
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   box-sizing: border-box; /* 🔥 Prevents overflow */
 }
 
+.work-item:focus-within {
+  border-color: #5b5fc7;
+  box-shadow: 0 0 0 1px #5b5fc7;
+}
 
+.work-item:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
 .work-item-row {
   display: flex;
   flex-direction: column; 
   gap: 12px;
   width: 100%;
-  margin-bottom: 10px;
-
 }
-/* Horizontal sub-row for smaller inputs */
 .sub-row {
   display: flex;
   gap: 8px;
@@ -175,7 +178,7 @@
 }
 .work-item .priority {
   font-size: 11px;
-  color: #d83b01; /* Alert Orange for Priority */
+  color: #d83b01; 
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -185,14 +188,6 @@
   color: #605e5c;
   line-height: 1.4;
 }
-/* Container fix to prevent horizontal scroll */
-.work-items {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
 
 .header {
   display: flex;
@@ -200,7 +195,6 @@
   font-weight: 600;
   margin-bottom: 6px;
 }
-
 
 .priority {
   font-size: 12px;
@@ -213,8 +207,6 @@
   color: #374151;
 }
 
-
-
 /* Badges for Epic, Feature, etc. */
 .badge {
   font-size: 10px;
@@ -225,7 +217,31 @@
   background: #f3f2f1;
   color: #605e5c;
 }
+.badge.epic {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
 
+.badge.feature {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge.story,
+.badge.user-story {
+  background: #e0f7fa;
+  color: #0f766e;
+}
+
+.badge.task {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.badge.bug {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 /* Summary List Styling */
 .summary h4 {
   font-size: 15px;
@@ -235,8 +251,9 @@
 }
 
 .summary ul {
-  padding-left: 18px;
-  margin: 5px 0;
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-bottom: 10px;
 }
 
 .summary li {
@@ -247,20 +264,30 @@
 
 .message-row {
   display: flex;
-  margin-bottom: 20px; /* Increased spacing between messages */
-  align-items: flex-start; /* 🔥 Align avatars to the TOP of the message */
-  gap: 12px; /* Consistent gap between avatar and bubble */
+  margin-bottom: 20px; 
+  align-items: flex-start; 
+  gap: 12px; 
 }
 
 .message-row.user {
+  width: 100%;
+  display: flex;
   justify-content: flex-end;
-  flex-direction: row-reverse;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.message-row.user .bubble {
+  max-width: 78%;
+}
+
+.message-row.user .user-avatar {
+  flex-shrink: 0;
 }
 
 .message-row.assistant {
   justify-content: flex-start;
 }
-
 
 .user-avatar {
   background: #5b5fc7;
@@ -269,32 +296,15 @@
   font-size: 12px;
   font-weight: bold;
 }
-.summary ul {
-  list-style-type: disc;   /* 🔥 brings bullets back */
-  padding-left: 20px;
-  margin-bottom: 10px;
-}
 
-.summary li {
-  margin-bottom: 4px;
-}
 /* 6. Typography Improvements */
-.bot-name {
-  font-size: 14px;
-  letter-spacing: 0.5px;
-}
 
 .status {
   font-size: 11px;
-  color: #c7e0f4; /* Lighter blue for status text */
+  color: #c7e0f4; 
+  opacity: 0.8;
 }
 
-.time {
-  font-size: 10px;
-  margin-top: 6px;
-  color: #8a8886;
-  text-align: left; /* Professional standard */
-}
 .card-header-actions {
   display: flex;
   justify-content: space-between;
@@ -302,7 +312,7 @@
   width: 100%;
   margin-bottom: 12px;
 }
-/* Premium Inputs: No borders until hover/focus */
+
 .input-field {
   width: 100%;
   border: 1px solid transparent;
@@ -323,11 +333,17 @@
   padding-left: 0;
 }
 textarea.input-field {
-  min-height: 80px; /* Force it to be taller */
-  line-height: 1.5;
+  min-height: 130px;
+  max-height: 260px;
+  padding: 12px 14px;
+  line-height: 1.6;
   font-family: inherit;
-  resize: none; /* Keeps it professional looking */
-  overflow: hidden; /* We'll handle height in TS or just set a safe minimum */
+  resize: vertical;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #edebe9;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 /* Hover/Focus states for professional look */
@@ -364,3 +380,84 @@ textarea.input-field {
   background-color: #094a09;
 }
 
+.typing-bubble {
+  padding: 14px 18px;
+  min-width: 70px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5b5fc7;
+  animation: bounce 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: .4;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* ENTERPRISE SCROLLBAR */
+.chat-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+  background: #c8c6c4;
+  border-radius: 20px;
+}
+
+.chat-body::-webkit-scrollbar-thumb:hover {
+  background: #a19f9d;
+}
+
+/* CLEAN TEXTAREA SCROLLBAR */
+textarea.input-field::-webkit-scrollbar {
+  width: 6px;
+}
+
+textarea.input-field::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+textarea.input-field::-webkit-scrollbar-thumb {
+  background: #c8c6c4;
+  border-radius: 20px;
+}
+
+textarea.input-field::-webkit-scrollbar-thumb:hover {
+  background: #a19f9d;
+}
+
+/* Remove arrow buttons */
+textarea.input-field::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
