@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import * as microsoftTeams from '@microsoft/teams-js';
 import { CommonModule } from '@angular/common';
 import { ChatViewComponent } from '../../shared/components/chat-view-component/chat-view.component';
-
+import { MeetingContextService } from '../../core/services/meeting-context.service';
 @Component({
   selector: 'app-sidepanel',
   standalone: true,
@@ -16,26 +16,39 @@ import { ChatViewComponent } from '../../shared/components/chat-view-component/c
 export class SidepanelComponent implements OnInit {
 
   meetingId: string = '';
-  loading = true;
+   loading: boolean = true;
+ constructor(private meetingContext: MeetingContextService) {}
 
+  // ngOnInit(): void {
+  //   microsoftTeams.app.initialize()
+  //     .then(() => {
+  //       return microsoftTeams.app.getContext();
+  //     })
+  //     .then((context) => {
+
+  //       // ✅ Get real meeting ID from Teams
+  //       if (context.meeting?.id) {
+  //         this.meetingId = context.meeting.id;
+  //       }
+
+  //       this.loading = false;
+  //     })
+  //     .catch(() => {
+  //       // ✅ Local fallback (only for testing)
+  //       this.meetingId = 'test-meeting';
+  //       this.loading = false;
+  //     });
+  // }
   ngOnInit(): void {
-    microsoftTeams.app.initialize()
-      .then(() => {
-        return microsoftTeams.app.getContext();
-      })
-      .then((context) => {
+    this.meetingId = this.meetingContext.getMeetingId();
 
-        // ✅ Get real meeting ID from Teams
-        if (context.meeting?.id) {
-          this.meetingId = context.meeting.id;
-        }
+    console.log("Sidepanel Meeting ID:", this.meetingId);
 
-        this.loading = false;
-      })
-      .catch(() => {
-        // ✅ Local fallback (only for testing)
-        this.meetingId = 'test-meeting';
-        this.loading = false;
-      });
+    // simple loading simulation / safety
+    if (this.meetingId) {
+      this.loading = false;
+    } else {
+      console.error("Meeting ID not found!");
+    }
   }
 }

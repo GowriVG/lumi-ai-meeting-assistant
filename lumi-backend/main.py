@@ -15,7 +15,7 @@ from services.openai_service import summarize_meeting, ask_question
 from memory.session_store import store_meeting, get_meeting, update_summary, add_qa
 from routes.meeting_routes import router as meeting_router
 from routes.ado_routes import router as ado_router
-
+from uuid import uuid4
 from logger import logger
 logger.info("LUMI Backend started successfully")
 
@@ -82,5 +82,17 @@ def health():
 app.include_router(meeting_router)
 app.include_router(ado_router)
 
+@app.post("/create-meeting")
+def create_meeting():
+    meeting_id = f"meeting-{uuid4()}"
 
+    # create empty meeting in blob
+    store_meeting(meeting_id, "")
+
+    return {
+        "status": "success",
+        "data": {
+            "meeting_id": meeting_id
+        }
+    }
 

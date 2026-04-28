@@ -29,9 +29,10 @@ def load_meeting_service(meeting_id: str, transcript: str):
     if len(transcript) > 20000:
         raise PromptValidationError("Transcript too large")
     
-    if not transcript or transcript.strip() == "":
-       raise PromptValidationError("Transcript cannot be empty")
-     
+    # if not transcript or transcript.strip() == "":
+    #    raise PromptValidationError("Transcript cannot be empty")
+    if transcript is None:
+        raise PromptValidationError("Transcript cannot be null")
     cleaned = clean_transcript(transcript)
 
     store_meeting(meeting_id, cleaned)
