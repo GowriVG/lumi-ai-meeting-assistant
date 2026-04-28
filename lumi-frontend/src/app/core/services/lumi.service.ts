@@ -11,8 +11,8 @@ import {
 })
 export class LumiService {
   // Use the local URL where your FastAPI server is running
-  private readonly API_URL = 'http://127.0.0.1:8000';
-  //private readonly API_URL = 'https://lumiapi01.azurewebsites.net';
+  //private readonly API_URL = 'http://127.0.0.1:8000';
+  private readonly API_URL = 'https://lumiapi01.azurewebsites.net';
   private readonly API_KEY = 'lumi-secret';
   private readonly headers = new HttpHeaders({
     'Content-Type': 'application/json',

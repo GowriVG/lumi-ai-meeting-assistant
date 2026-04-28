@@ -29,7 +29,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://teams.microsoft.com",
-        "http://localhost:4200"
+        "http://localhost:4200",
+        "https://a1strlumi01t.z19.web.core.windows.net"
     ],
     allow_credentials=True,
     allow_methods=["*"],
