@@ -1,15 +1,16 @@
 <div class="enterprise-summary-container">
-  
   <div class="empty-state-hero" *ngIf="!summary">
     <h2>Ready to summarize?</h2>
-    <p>LUMI can transform your meeting transcript into actionable insights in seconds.</p>
+    <p>
+      LUMI can transform your meeting transcript into actionable insights in
+      seconds.
+    </p>
     <button class="fluent-primary-btn" (click)="onGenerateSummary()">
       Generate Insight Summary
     </button>
   </div>
 
   <div class="dashboard-grid" *ngIf="summary">
-    
     <div class="summary-grid-row">
       <section class="fluent-card highlight">
         <div class="card-header">
@@ -27,7 +28,10 @@
           <h3>Final Decisions</h3>
         </div>
         <div class="pill-container">
-          <span class="decision-pill" *ngFor="let decision of summary.decisions">
+          <span
+            class="decision-pill"
+            *ngFor="let decision of summary.decisions"
+          >
             {{ decision }}
           </span>
         </div>
@@ -40,7 +44,9 @@
           <span class="icon-wrapper tasks">📋</span>
           <h3>Pending Action Items</h3>
         </div>
-        <span class="item-count">{{ summary.action_items.length }} items detected</span>
+        <span class="item-count"
+          >{{ summary.action_items.length }} items detected</span
+        >
       </div>
 
       <div class="action-item-table">

@@ -7,7 +7,8 @@ from services.meeting_service import (
     load_meeting_service,
     summarize_service,
     ask_service,
-    get_meeting_service
+    get_meeting_service,
+    detect_intent_service
 )
 
 router = APIRouter(
@@ -41,6 +42,15 @@ def ask(meeting_id: str, request: QuestionRequest):
 @router.get("/meeting/{meeting_id}")
 def get_meeting(meeting_id: str):
     result = get_meeting_service(meeting_id)
+
+    return {
+        "status": "success",
+        "data": result
+    }
+
+@router.post("/detect-intent")
+def detect_intent_route(request: QuestionRequest):
+    result = detect_intent_service(request.question)
 
     return {
         "status": "success",

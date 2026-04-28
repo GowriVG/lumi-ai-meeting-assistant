@@ -1,7 +1,13 @@
 import logging
-from memory.session_store import store_meeting, get_meeting, update_summary, add_qa
+from memory.session_store import (
+    store_meeting,
+    get_meeting,
+    update_summary,
+    add_qa,
+    update_last_topic
+)
 from services.retrieval_service import store_embeddings
-from services.openai_service import summarize_meeting, ask_question
+from services.openai_service import summarize_meeting, ask_question, detect_intent
 from exceptions.custom_exceptions import MeetingNotFoundError, PromptValidationError
 
 logger = logging.getLogger(__name__)
@@ -54,18 +60,39 @@ def summarize_service(meeting_id: str):
 
     return {"summary": summary}
 
-
 def ask_service(meeting_id: str, question: str):
     logger.info(f"Question received for {meeting_id}: {question}")
+
     meeting = get_meeting(meeting_id)
 
     if not meeting:
-        logger.warning(f"Meeting not found: {meeting_id}")
         raise MeetingNotFoundError("Meeting not found")
 
-    answer = ask_question(meeting_id, meeting["transcript"], question)
+    q = question.lower()
+
+    # Detect current topic
+    if "login" in q:
+        update_last_topic(meeting_id, "login")
+
+    elif "testing" in q:
+        update_last_topic(meeting_id, "testing")
+
+    elif "dashboard" in q:
+        update_last_topic(meeting_id, "dashboard")
+
+    # Resolve follow-up question
+    last_topic = meeting.get("last_topic")
+
+    if "it" in q and last_topic:
+        question = question.replace("it", last_topic)
+
+    answer = ask_question(
+        meeting_id,
+        meeting["transcript"],
+        question
+    )
+
     add_qa(meeting_id, question, answer)
-    logger.info(f"Answer generated for {meeting_id}: {answer}")
 
     return {"answer": answer}
 
@@ -77,3 +104,6 @@ def get_meeting_service(meeting_id: str):
         raise MeetingNotFoundError("Meeting not found")
 
     return meeting
+
+def detect_intent_service(message: str):
+    return detect_intent(message)

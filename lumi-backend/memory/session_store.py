@@ -2,9 +2,8 @@ import json
 from datetime import datetime
 from services.blob_service import upload_text, download_text, blob_exists
 
-
+# Old in-memory store (replaced by Azure Blob Storage for persistence)
 # meeting_store = {}
-
 # def store_meeting(meeting_id, transcript):
 #     meeting_store[meeting_id] = {
 #         "transcript": transcript,
@@ -37,6 +36,7 @@ def store_meeting(meeting_id, transcript):
         "transcript": transcript,
         "summary": None,
         "qa_history": [],
+        "last_topic": None,
         "created_at": str(datetime.utcnow()),
         "last_updated": str(datetime.utcnow())
     }
@@ -68,3 +68,15 @@ def add_qa(meeting_id, question, answer):
         })
 
         upload_text(f"{meeting_id}/meeting.json", json.dumps(data))
+
+def update_last_topic(meeting_id, topic):
+    data = get_meeting(meeting_id)
+
+    if data:
+        data["last_topic"] = topic
+        data["last_updated"] = str(datetime.utcnow())
+
+        upload_text(
+            f"{meeting_id}/meeting.json",
+            json.dumps(data)
+        )

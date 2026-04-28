@@ -40,20 +40,19 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     }
 
     this.lumiService.getMeetingState(this.meetingId).subscribe({
-      next: (data) => {
-        console.log('Meeting data:', data);
+      next: (res: any) => {
+        console.log('Meeting data:', res.data);
 
-        // ❌ No transcript
         if (
-          !data.transcript ||
-          data.transcript === 'No transcript available yet.'
+          !res.data.transcript ||
+          res.data.transcript === 'No transcript available yet.'
         ) {
-          this.showError('⚠️ No transcript available for this meeting.');
+          this.showError('Meeting transcript is currently unavailable.');
           return;
         }
 
         // ✅ Valid meeting
-        this.initializeMessages(data);
+        this.initializeMessages(res.data);
       },
 
       error: (err) => {
@@ -94,8 +93,8 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
   }
   loadMessages() {
     this.lumiService.getMeetingState(this.meetingId).subscribe({
-      next: (data) => {
-        this.messages = data.qa_history || [];
+      next: (res: any) => {
+        this.messages = res.data.qa_history || [];
       },
       error: (err) => {
         console.error('Meeting load error:', err);
@@ -117,7 +116,6 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     const originalQuestion = this.userInput;
     const question = originalQuestion.trim().toLowerCase();
 
-    // Push user message
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -130,110 +128,132 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     this.isTyping = true;
     this.shouldScroll = true;
 
-    const greetings = ['hi', 'hello', 'hey'];
-
-    if (greetings.includes(question)) {
-      this.messages.push({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'Hello. How can I assist you with your meeting?',
-        timestamp: new Date(),
-      });
-      this.shouldScroll = true;
-      this.isTyping = false;
-      return;
-    }
-
-    //CASE 1: CREATE REQUEST
-    if (
-      question.includes('create work item') ||
-      question.includes('create user story') ||
-      question.includes('generate work item')
-    ) {
-      this.lumiService.getSummary(this.meetingId).subscribe({
-        next: (res) => {
-          let items: any = res.summary.action_items || [];
-
-          this.pendingActionItems = items.map((item: any) => ({
-            ...item,
-            selected: false, // default unchecked
-          }));
-
-          const formatted = this.formatActionItems(items);
-
-          this.messages.push({
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: '',
-            type: 'work-items',
-            data: items,
-            timestamp: new Date(),
-          });
-          this.shouldScroll = true;
-          this.isTyping = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.isTyping = false;
-        },
-      });
-
-      return;
-    }
-
-    console.log('Meeting ID:', this.meetingId);
-    if (question.includes('summary') || question.includes('summarize')) {
-      this.lumiService.getSummary(this.meetingId).subscribe({
-        next: (res) => {
-          console.log('SUMMARY RESPONSE:', res);
-
-          const summary = res.summary || {
-            key_points: [],
-            decisions: [],
-            action_items: [],
-          };
-
-          const formatted = this.formatSummary(summary);
-
-          this.messages.push({
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: formatted,
-            timestamp: new Date(),
-          });
-          this.shouldScroll = true;
-
-          this.isTyping = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.isTyping = false;
-        },
-      });
-
-      return;
-    }
-
-    // 🔥 DEFAULT CHAT
-    this.lumiService.askQuestion(this.meetingId, originalQuestion).subscribe({
+    this.lumiService.detectIntent(originalQuestion).subscribe({
       next: (res: any) => {
-        const answer =
-          typeof res.answer === 'string'
-            ? res.answer
-            : res.answer?.answer || JSON.stringify(res.answer);
+        //const intent = res.data.intent;
+        let intent = res.data.intent;
 
-        this.messages.push({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: answer,
-          timestamp: new Date(),
-        });
-        this.shouldScroll = true;
+        // Greeting
+        if (intent === 'greeting') {
+          this.messages.push({
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: 'Hello. How can I assist you with your meeting?',
+            timestamp: new Date(),
+          });
 
-        this.isTyping = false;
+          this.shouldScroll = true;
+          this.isTyping = false;
+          return;
+        }
+
+        if (
+          originalQuestion.includes('who') ||
+          originalQuestion.includes('what') ||
+          originalQuestion.includes('when') ||
+          originalQuestion.includes('did')
+        ) {
+          intent = 'qa';
+        }
+        // Summary
+        if (intent === 'summary') {
+          this.lumiService.getSummary(this.meetingId).subscribe({
+            next: (res: any) => {
+              const summary = res.data || {
+                key_points: [],
+                decisions: [],
+                action_items: [],
+              };
+
+              const formatted = this.formatSummary(summary);
+
+              this.messages.push({
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: formatted,
+                timestamp: new Date(),
+              });
+              this.messages.push({
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content:
+                  'I found action items. Would you like me to create them in Azure DevOps?',
+                timestamp: new Date(),
+              });
+
+              this.shouldScroll = true;
+              this.isTyping = false;
+            },
+            error: (err) => {
+              console.error(err);
+              this.isTyping = false;
+            },
+          });
+
+          return;
+        }
+
+        // Work Items
+        if (intent === 'work_items') {
+          this.lumiService.getSummary(this.meetingId).subscribe({
+            next: (res: any) => {
+              let items: any = res.data.action_items || [];
+
+              this.pendingActionItems = items.map((item: any) => ({
+                ...item,
+                selected: false,
+              }));
+
+              this.messages.push({
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: '',
+                type: 'work-items',
+                data: items,
+                timestamp: new Date(),
+              });
+
+              this.shouldScroll = true;
+              this.isTyping = false;
+            },
+            error: (err) => {
+              console.error(err);
+              this.isTyping = false;
+            },
+          });
+
+          return;
+        }
+
+        // Default Q&A
+        this.lumiService
+          .askQuestion(this.meetingId, originalQuestion)
+          .subscribe({
+            next: (res: any) => {
+              const answer =
+                typeof res.data === 'string'
+                  ? res.data
+                  : res.data.answer || 'No response available.';
+
+              this.messages.push({
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: answer,
+                timestamp: new Date(),
+              });
+
+              this.shouldScroll = true;
+              this.isTyping = false;
+            },
+            error: (err) => {
+              console.error(err);
+              this.isTyping = false;
+            },
+          });
       },
+
       error: (err) => {
-        console.error(err);
+        console.error('Intent detection failed:', err);
         this.isTyping = false;
       },
     });
@@ -290,6 +310,16 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     }
 
     let html = `<div class="summary">`;
+
+    if (summary.insights?.length) {
+      html += `<h4>Insights</h4><ul>`;
+
+      summary.insights.forEach((i: string) => {
+        html += `<li>${i}</li>`;
+      });
+
+      html += `</ul>`;
+    }
 
     if (summary.key_points?.length) {
       html += `<h4>Key Points</h4><ul>`;

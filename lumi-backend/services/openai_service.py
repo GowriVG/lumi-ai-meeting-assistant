@@ -19,6 +19,25 @@ deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 def normalize_question(q: str):
     return q.lower().strip()
 
+def generate_insights(summary):
+    insights = []
+
+    items = summary.get("action_items", [])
+
+    unassigned = [i for i in items if not i.get("owner")]
+    if unassigned:
+        insights.append(f"{len(unassigned)} tasks have no owner")
+
+    bugs = [i for i in items if i.get("type") == "Bug"]
+    if bugs:
+        insights.append(f"{len(bugs)} bugs mentioned")
+
+    no_priority = [i for i in items if not i.get("priority")]
+    if no_priority:
+        insights.append(f"{len(no_priority)} tasks have no priority")
+
+    return insights
+
 def summarize_meeting(transcript: str):
     logger.info("Calling OpenAI for summarization")
 
@@ -125,18 +144,18 @@ def ask_question(meeting_id: str, transcript: str, question: str):
     context = "\n\n".join(chunks) if chunks else transcript[:1000]
 
     prompt = f"""
-You are an intelligent AI meeting assistant.
+You are LUMI, an intelligent enterprise meeting assistant.
 
-Answer the question based on the CONTEXT provided.
+Use the meeting context to answer naturally.
 
-IMPORTANT:
-- Understand intent, not exact wording
-- Handle spelling mistakes and paraphrasing
-- Be flexible in understanding
-
-STRICT RULE:
-- If answer is NOT present in context, say:
-  "This information was not discussed in the meeting."
+RULES:
+1. Understand spelling mistakes, shorthand, broken grammar.
+2. Infer intent from vague questions.
+3. If user asks about ownership, assignee, responsibility:
+   check names, owners, assigned people, tasks.
+4. If partial info exists, answer with best possible inference.
+5. If no exact answer exists, say:
+   "No clear owner was mentioned in the meeting."
 
 Return JSON:
 {{ "answer": "your answer here" }}
@@ -174,3 +193,66 @@ QUESTION:
 
     except Exception as e:
         raise OpenAIServiceError(f"Q&A Error: {str(e)}")
+    
+def detect_intent(message: str):
+    logger.info("Calling OpenAI for intent detection")
+
+    prompt = f"""
+Classify the user message into ONLY one of these intents:
+
+summary
+work_items
+qa
+greeting
+epic_check
+
+STRICT RULES:
+
+summary:
+- Asking for full meeting summary
+- Example: "give summary", "summarize meeting"
+
+work_items:
+- Asking to create tasks, backlog, devops items
+
+qa:
+- ANY specific question about meeting
+- Asking about person, owner, task, decision
+- Example:
+  "who did what"
+  "what did shobha commit to"
+  "who owns login"
+  "what was decided"
+
+greeting:
+- hi, hello, hey
+
+epic_check:
+- asking if epic exists or should be created
+
+VERY IMPORTANT:
+If question mentions a PERSON, TASK, or SPECIFIC DETAIL → ALWAYS classify as qa
+
+Return JSON only:
+{{ "intent": "qa" }}
+
+User message:
+{message}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model=deployment,
+            messages=[
+                {"role": "system", "content": "You are an intent classifier. Return JSON only."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0,
+            response_format={"type": "json_object"}
+        )
+
+        content = response.choices[0].message.content.strip()
+        return json.loads(content)
+
+    except Exception as e:
+        raise OpenAIServiceError(f"Intent Detection Error: {str(e)}")
