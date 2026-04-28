@@ -20,7 +20,6 @@ import { ChatMessage } from '../../models/meeting.model';
 })
 export class ChatViewComponent implements OnInit, AfterViewChecked {
   @Input() meetingId!: string;
-
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   messages: ChatMessage[] = [];
@@ -28,12 +27,12 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
   isTyping: boolean = false;
   pendingActionItems: any[] = [];
   shouldScroll: boolean = false;
+  isOnline: boolean = false;
 
   constructor(private lumiService: LumiService) {}
 
   ngOnInit(): void {
     console.log('Using meeting:', this.meetingId);
-
     if (!this.meetingId) {
       this.showError('Meeting context not available.');
       return;
@@ -42,7 +41,6 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
     this.lumiService.getMeetingState(this.meetingId).subscribe({
       next: (res: any) => {
         console.log('Meeting data:', res.data);
-
         if (
           !res.data.transcript ||
           res.data.transcript === 'No transcript available yet.'
@@ -50,17 +48,22 @@ export class ChatViewComponent implements OnInit, AfterViewChecked {
           this.showError('Meeting transcript is currently unavailable.');
           return;
         }
+        // If valid meeting
+        this.isOnline = true;
+        this.initializeMessages(res.data);
 
-        // ✅ Valid meeting
+        // Valid meeting
         this.initializeMessages(res.data);
       },
 
       error: (err) => {
         console.error('Meeting not found:', err);
+        this.isOnline = false;
         this.showError('⚠️ Meeting not found. Transcript not loaded.');
       },
     });
   }
+  
   canCreateSelectedItems(): boolean {
     return this.pendingActionItems.some(
       (item: any) => item.selected && !item.created,

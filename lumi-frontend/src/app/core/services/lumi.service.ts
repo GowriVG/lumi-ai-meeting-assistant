@@ -40,37 +40,36 @@ export class LumiService {
    * Triggers the AI to generate a structured summary from the transcript.
    */
   getSummary(
-  meetingId: string
-): Observable<{ status: string; data: MeetingSummary }> {
-  return this.http
-    .post<{ status: string; data: MeetingSummary }>(
-      `${this.API_URL}/summarize/${meetingId}`,
-      {},
-      { headers: this.headers }
-    )
-    .pipe(catchError(this.handleError));
-}
+    meetingId: string,
+  ): Observable<{ status: string; data: MeetingSummary }> {
+    return this.http
+      .post<{
+        status: string;
+        data: MeetingSummary;
+      }>(`${this.API_URL}/summarize/${meetingId}`, {}, { headers: this.headers })
+      .pipe(catchError(this.handleError));
+  }
 
   /**
    * Sends a specific question to the AI agent.
    */
   askQuestion(
-  meetingId: string,
-  question: string
-): Observable<{ answer: string }> {
-  return this.http
-    .post<{ answer: string }>(
-      `${this.API_URL}/ask/${meetingId}`,
-      {
-        transcript: '',
-        question: question,
-      },
-      {
-        headers: this.headers
-      }
-    )
-    .pipe(catchError(this.handleError));
-}
+    meetingId: string,
+    question: string,
+  ): Observable<{ answer: string }> {
+    return this.http
+      .post<{ answer: string }>(
+        `${this.API_URL}/ask/${meetingId}`,
+        {
+          transcript: '',
+          question: question,
+        },
+        {
+          headers: this.headers,
+        },
+      )
+      .pipe(catchError(this.handleError));
+  }
 
   /**
    * Centralized error handler for API communication.

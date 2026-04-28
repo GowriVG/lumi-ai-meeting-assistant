@@ -11,8 +11,8 @@ import { MeetingSummary } from '../../../../shared/models/meeting.model';
 })
 export class SummaryViewComponent {
   // Use the MeetingSummary interface for enterprise-grade type safety
-  @Input() summary: MeetingSummary | null = null; 
-  @Input() meetingId!: string; 
+  @Input() summary: MeetingSummary | null = null;
+  @Input() meetingId!: string;
   @Output() generate = new EventEmitter<void>();
 
   onGenerateSummary() {

@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay } from 'rxjs';
-import { MeetingDetails, MeetingSummary } from '../../shared/models/meeting.model';
+import {
+  MeetingDetails,
+  MeetingSummary,
+} from '../../shared/models/meeting.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LumiService {
   // Use environment variables in a real enterprise setup
-  private readonly API_URL = 'http://127.0.0.1:8000'; 
+  private readonly API_URL = 'http://127.0.0.1:8000';
 
   constructor(private http: HttpClient) {}
 
@@ -18,19 +21,20 @@ export class LumiService {
    */
   loadMeeting(meetingId: string, transcript: string): Observable<any> {
     return this.http.post(`${this.API_URL}/load-meeting/${meetingId}`, {
-      transcript: transcript
+      transcript: transcript,
     });
   }
 
   /**
-   * Triggers AI summarization. 
+   * Triggers AI summarization.
    * Uses shareReplay to avoid redundant calls if multiple components subscribe.
    */
   getSummary(meetingId: string): Observable<{ summary: MeetingSummary }> {
-    return this.http.post<{ summary: MeetingSummary }>(
-      `${this.API_URL}/summarize/${meetingId}`, 
-      {}
-    ).pipe(shareReplay(1));
+    return this.http
+      .post<{
+        summary: MeetingSummary;
+      }>(`${this.API_URL}/summarize/${meetingId}`, {})
+      .pipe(shareReplay(1));
   }
 
   /**
@@ -39,12 +43,12 @@ export class LumiService {
    */
   askLumi(meetingId: string, question: string): Observable<{ answer: string }> {
     const payload = {
-      transcript: "", // Backend handles transcript fetching via Graph API
-      question: question
+      transcript: '', // Backend handles transcript fetching via Graph API
+      question: question,
     };
     return this.http.post<{ answer: string }>(
-      `${this.API_URL}/ask/${meetingId}`, 
-      payload
+      `${this.API_URL}/ask/${meetingId}`,
+      payload,
     );
   }
 
@@ -52,10 +56,11 @@ export class LumiService {
    * Fetches the full current state of the meeting (transcript + current summary).
    */
   getMeetingState(meetingId: string): Observable<MeetingDetails> {
-    return this.http.get<MeetingDetails>(`${this.API_URL}/meeting/${meetingId}`);
+    return this.http.get<MeetingDetails>(
+      `${this.API_URL}/meeting/${meetingId}`,
+    );
   }
 }
-
 
 //where to add this code snippet in the app.component.ts file?
 // You would typically add the code snippet that interacts with the `LumiService` inside the `ngOnInit` method of your `AppComponent`. This is because you want to load the meeting state as soon as the component initializes, which is when the Microsoft Teams context is available.

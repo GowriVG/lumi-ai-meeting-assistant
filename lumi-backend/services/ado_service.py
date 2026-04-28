@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 import json
 import urllib3
 import time
-
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 load_dotenv()
@@ -21,23 +19,18 @@ class ADOService:
         if self.user_map is None:
             self.user_map = self.get_ado_users()
 
- 
-
     def get_user_display_name(self, display_name):
 
         if self.user_map is None:
             self.user_map = self.get_ado_users()
-
         name = display_name.lower()
 
         for stored_name in self.user_map.values():
             if name in stored_name.lower():
                 return stored_name
-
         return None
 
     def create_work_item(self, item, parent_id=None):
-
         title = item.get("title", "No Title")
         description = item.get("description", "No Description")
         item_type = item.get("type", "Task")

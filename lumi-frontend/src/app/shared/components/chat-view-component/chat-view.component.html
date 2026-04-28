@@ -1,106 +1,129 @@
 <div class="chat-page">
-
   <div class="chat-card">
-
     <!-- HEADER -->
     <div class="chat-header">
-      <div class="bot-info">
-         <div class="avatar">
+      <div class="header-left">
+        <div class="avatar">
           <img src="lumi-logo1.png" alt="LUMI" />
-         </div>
-        <div>
+        </div>
+        <div class="bot-details">
           <div class="bot-name">LUMI AI</div>
-          <div class="status">● Online</div>
+          <div class="status-row">
+            <span
+              class="status-dot"
+              [ngClass]="isOnline ? 'online' : 'offline'"
+            ></span>
+            <span class="status-text">
+              {{ isOnline ? "Active" : "Disconnected" }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- MESSAGES -->
     <div class="chat-body" #scrollContainer>
-
-      <div *ngFor="let msg of messages"
-           class="message-row"
-           [ngClass]="msg.role">
-
+      <div
+        *ngFor="let msg of messages"
+        class="message-row"
+        [ngClass]="msg.role"
+      >
         <!-- Assistant Avatar -->
         <div *ngIf="msg.role === 'assistant'" class="avatar">
           <img src="lumi-logo1.png" alt="LUMI" />
         </div>
 
         <div class="bubble">
+          <!-- WORK ITEMS UI -->
+          <ng-container *ngIf="msg.type === 'work-items'; else normalText">
+            <div class="work-items">
+              <div *ngFor="let item of pendingActionItems" class="work-item">
+                <div class="card-header-actions">
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      cursor: pointer;
+                      font-size: 13px;
+                      color: #605e5c;
+                    "
+                  >
+                    <input type="checkbox" [(ngModel)]="item.selected" />
+                    <span>Select for DevOps</span>
+                  </label>
+                  <span
+                    class="badge"
+                    [ngClass]="item.type.toLowerCase().replace(' ', '-')"
+                    >{{ item.type }}</span
+                  >
+                </div>
 
-        <!-- WORK ITEMS UI -->
-        <ng-container *ngIf="msg.type === 'work-items'; else normalText">
+                <div class="work-item-row">
+                  <input
+                    [(ngModel)]="item.title"
+                    placeholder="Title"
+                    class="input-field title-input"
+                  />
 
-  <div class="work-items">
-<div *ngFor="let item of pendingActionItems" class="work-item">
-  
-  <div class="card-header-actions">
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #605e5c;">
-      <input type="checkbox" [(ngModel)]="item.selected" />
-      <span>Select for DevOps</span>
-    </label>
-    <span class="badge" [ngClass]="item.type.toLowerCase().replace(' ', '-')">{{ item.type }}</span>
-  </div>
+                  <select
+                    [(ngModel)]="item.type"
+                    class="input-field"
+                    style="flex: 1; font-weight: 600; color: #0078d4"
+                  >
+                    <option>Epic</option>
+                    <option>Feature</option>
+                    <option>User Story</option>
+                    <option>Task</option>
+                    <option>Bug</option>
+                  </select>
+                </div>
 
-  <div class="work-item-row">
-    <input [(ngModel)]="item.title" 
-           placeholder="Title" 
-           class="input-field title-input" />
-    
-    <select [(ngModel)]="item.type" class="input-field" style="flex: 1; font-weight: 600; color: #0078d4;">
-      <option>Epic</option>
-      <option>Feature</option>
-      <option>User Story</option>
-      <option>Task</option>
-      <option>Bug</option>
-    </select>
-  </div>
+                <div class="work-item-row">
+                  <textarea
+                    [(ngModel)]="item.description"
+                    placeholder="Description"
+                    class="input-field"
+                  ></textarea>
+                </div>
 
-  <div class="work-item-row">
-    <textarea [(ngModel)]="item.description" 
-              placeholder="Description" 
-              class="input-field"></textarea>
-  </div>
+                <div class="work-item-row" style="margin-bottom: 0">
+                  <input
+                    [(ngModel)]="item.owner"
+                    placeholder="Unassigned"
+                    class="input-field"
+                    style="font-size: 12px; flex: 1"
+                  />
 
-  <div class="work-item-row" style="margin-bottom: 0;">
-    <input [(ngModel)]="item.owner" 
-           placeholder="Unassigned" 
-           class="input-field" 
-           style="font-size: 12px; flex: 1;" />
-    
-    <input [(ngModel)]="item.priority" 
-           placeholder="Priority" 
-           class="input-field" 
-           style="font-size: 12px; flex: 1; text-align: right;" />
-  </div>
+                  <input
+                    [(ngModel)]="item.priority"
+                    placeholder="Priority"
+                    class="input-field"
+                    style="font-size: 12px; flex: 1; text-align: right"
+                  />
+                </div>
+              </div>
 
-</div>
+              <!-- ✅ BUTTON -->
+              <button
+                class="create-btn"
+                (click)="createSelectedItems()"
+                [disabled]="!canCreateSelectedItems()"
+              >
+                Create Selected Items
+              </button>
+            </div>
+          </ng-container>
 
-    <!-- ✅ BUTTON -->
-   <button
-  class="create-btn"
-  (click)="createSelectedItems()"
-  [disabled]="!canCreateSelectedItems()">
-      Create Selected Items
-    </button>
+          <!-- ✅ NORMAL TEXT -->
+          <ng-template #normalText>
+            <div class="summary" [innerHTML]="msg.content"></div>
+          </ng-template>
 
-  </div>
-
-</ng-container>
-
-        <!-- ✅ NORMAL TEXT -->
-        <ng-template #normalText>
-  <div class="summary" [innerHTML]="msg.content"></div>
-</ng-template>
-        
-
-        <div class="time">{{ msg.timestamp | date:'shortTime' }}</div>
-
-      </div>
+          <div class="time">{{ msg.timestamp | date: "shortTime" }}</div>
+        </div>
         <!-- User -->
         <div *ngIf="msg.role === 'user'" class="avatar user-avatar">U</div>
-
       </div>
 
       <!-- LOADER -->
@@ -109,14 +132,13 @@
           <img src="lumi-logo1.png" alt="LUMI" />
         </div>
         <div class="bubble typing-bubble">
-        <div class="typing-indicator">
-          <span></span>
-          <span></span>
-          <span></span>
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
-</div>
       </div>
-
     </div>
 
     <!-- INPUT -->
@@ -126,12 +148,7 @@
         (keydown.enter)="handleEnter($event)"
         placeholder="Type your message here..."
       />
-
-      <button (click)="sendMessage()">
-        ➤
-      </button>
+      <button (click)="sendMessage()">➤</button>
     </div>
-
   </div>
-
 </div>
